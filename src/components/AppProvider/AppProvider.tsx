@@ -13,6 +13,9 @@ import '@mantine/tiptap/styles.css';
 import { createTheme, MantineProvider } from '@mantine/core';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 
+// Firebase
+import '@/utils/firebase';
+
 // Import the generated route tree
 import { routeTree } from '@/routeTree.gen';
 
