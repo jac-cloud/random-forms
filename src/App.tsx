@@ -1,5 +1,7 @@
+import { AppProvider } from './components';
+
 function App() {
-  return <p>Hello</p>;
+  return <AppProvider />;
 }
 
 export default App;
