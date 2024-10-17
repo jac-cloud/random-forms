@@ -13,6 +13,8 @@ import '@mantine/tiptap/styles.css';
 import { createTheme, MantineProvider } from '@mantine/core';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 
+import '@/utils/appwrite';
+
 // Import the generated route tree
 import { routeTree } from '@/routeTree.gen';
 
