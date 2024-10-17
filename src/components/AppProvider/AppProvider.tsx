@@ -1,3 +1,5 @@
+import { Helmet, HelmetProvider } from 'react-helmet-async';
+
 import '@mantine/core/styles.css';
 
 import '@mantine/carousel/styles.css';
@@ -34,8 +36,11 @@ const theme = createTheme({
 
 export function AppProvider() {
   return (
-    <MantineProvider theme={theme}>
-      <RouterProvider router={router} />
-    </MantineProvider>
+    <HelmetProvider>
+      <MantineProvider theme={theme}>
+        <Helmet title="Random Forms" />
+        <RouterProvider router={router} />
+      </MantineProvider>
+    </HelmetProvider>
   );
 }

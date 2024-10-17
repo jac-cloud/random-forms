@@ -1,10 +1,12 @@
-import { Box } from '@mantine/core';
+import { LoadingOverlay } from '@mantine/core';
 import { createLazyFileRoute } from '@tanstack/react-router';
 
-export const Route = createLazyFileRoute('/')({
+export const IndexRoute = createLazyFileRoute('/')({
   component: Index,
 });
 
+export const Route = IndexRoute;
+
 function Index() {
-  return <Box>Loading..</Box>;
+  return <LoadingOverlay />;
 }
