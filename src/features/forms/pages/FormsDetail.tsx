@@ -1,5 +1,6 @@
 import { FormsDetailRoute } from '@/routes/forms/$quizId.lazy';
 import { Stack, Title } from '@mantine/core';
+import { useEffect, useState } from 'react';
 import { Question } from '../components';
 
 const questions = [
@@ -25,17 +26,51 @@ const questions = [
   },
 ];
 
+type Question = {
+  question: string;
+  answers: string[];
+};
+
+type FormsDetails = {
+  title: string;
+  owner: string;
+  questions: Question[];
+};
+
 export function FormsDetail() {
   const { quizId } = FormsDetailRoute.useParams();
+
+  async function getForm() {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve({
+          title: 'Excel',
+          owner: 'Microsoft',
+          questions,
+        });
+      }, 1000);
+    });
+  }
+
+  const [quiz, setQuiz] = useState<FormsDetails | null>(null);
+  useEffect(() => {
+    getForm().then(qs => {
+      setQuiz(qs as FormsDetails);
+    });
+  }, []);
+
+  if (!quiz) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Stack>
       <Title order={1} mb={16}>
-        Quiz: {quizId}
+        Quiz: {quiz.title}
       </Title>
       <Stack>
-        {questions.map((q, i) => (
-          <Question index={i + 1} id={'123'} question={q.question} answers={q.answers} />
+        {quiz.questions.map((q, i) => (
+          <Question key={i} index={i + 1} id={'123'} question={q.question} answers={q.answers} />
         ))}
       </Stack>
     </Stack>
