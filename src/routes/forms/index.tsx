@@ -6,9 +6,9 @@ type FormsHomeSearch = {
 };
 
 export const FormsHomeRoute = createFileRoute('/forms/')({
-  validateSearch: (search: Record<string, unknown>): FormsHomeSearch => {
+  validateSearch: (search: Record<string, unknown> | undefined): FormsHomeSearch => {
     return {
-      error: Number(search.error) || undefined,
+      error: Number(search?.error) || undefined,
     };
   },
   component: FormsHome,

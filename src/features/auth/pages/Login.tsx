@@ -36,7 +36,7 @@ export function Login() {
 
     setStatus(StatusStates.Sent);
     setOtp('');
-    setAccountId(result.userId); //TODO: CHeck if exist
+    setAccountId(result.userId); //TODO: Check if exist
   };
 
   const processOtpVerification = async () => {
@@ -51,7 +51,7 @@ export function Login() {
     if (!result) return;
 
     setStatus(StatusStates.Sent);
-    navigate({ to: '/forms', replace: true });
+    navigate({ to: '/forms', replace: true, search: { error: undefined } });
   };
 
   const isEmailValid = email.includes('@') && email.includes('.');
