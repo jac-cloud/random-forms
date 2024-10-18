@@ -17,12 +17,7 @@ function Root() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (session) {
-      navigate({
-        to: '/forms',
-        replace: true,
-      });
-    } else if (error) {
+    if (!session && error) {
       navigate({
         to: '/auth',
         replace: true,
