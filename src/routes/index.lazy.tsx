@@ -1,5 +1,5 @@
 import { LoadingOverlay } from '@mantine/core';
-import { createLazyFileRoute } from '@tanstack/react-router';
+import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
 
 export const IndexRoute = createLazyFileRoute('/')({
   component: Index,
@@ -8,5 +8,9 @@ export const IndexRoute = createLazyFileRoute('/')({
 export const Route = IndexRoute;
 
 function Index() {
+  const navigate = useNavigate();
+
+  navigate({ to: '/forms', replace: true, search: { error: undefined } });
+
   return <LoadingOverlay />;
 }
