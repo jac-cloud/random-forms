@@ -21,7 +21,7 @@ import '@/utils/appwrite';
 import { routeTree } from '@/routeTree.gen';
 
 // Create a new router instance
-const router = createRouter({ routeTree, basepath: import.meta.env.BASE_URL || '/' });
+const router = createRouter({ routeTree, basepath: import.meta.env.VITE_TANSTACK_BASE_PATH || '/' });
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
