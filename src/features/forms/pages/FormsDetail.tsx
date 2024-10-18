@@ -1,8 +1,9 @@
 import { FormsDetailRoute } from '@/routes/forms/$quizId.lazy';
 import { functions } from '@/utils';
 import { Stack, Title } from '@mantine/core';
+import { useNavigate } from '@tanstack/react-router';
 import { ExecutionMethod } from 'appwrite';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Question } from '../components';
 
 type Question = {
@@ -18,27 +19,34 @@ type FormsDetails = {
 };
 
 export function FormsDetail() {
+  const navigate = useNavigate();
+
   const { quizId } = FormsDetailRoute.useParams();
-  async function getForm(quizId: string): Promise<FormsDetails> {
-    const response = await functions.createExecution(
-      '67120ae600174dc868f6',
-      undefined,
-      false,
-      '/forms/' + quizId,
-      ExecutionMethod.GET,
-    );
 
-    if (response.status !== 'completed') {
-      throw new Error('Failed to get form');
-    }
+  const getForm = useCallback(
+    async (quizId: string): Promise<FormsDetails> => {
+      const response = await functions.createExecution(
+        '67120ae600174dc868f6',
+        undefined,
+        false,
+        '/forms/' + quizId,
+        ExecutionMethod.GET,
+      );
 
-    console.log(response.responseBody);
-    const data = JSON.parse(response.responseBody);
-    return data;
-  }
+      if (response.status !== 'completed') {
+        throw navigate({ to: '/forms', search: { error: 404 } });
+      }
+
+      console.log(response.responseBody);
+      const data = JSON.parse(response.responseBody);
+      return data;
+    },
+    [navigate],
+  );
 
   const [quiz, setQuiz] = useState<FormsDetails | null>(null);
   const [error, setError] = useState<Error | null>(null);
+
   useEffect(() => {
     try {
       getForm(quizId)
@@ -53,7 +61,7 @@ export function FormsDetail() {
       console.error(error);
       setError(error as Error);
     }
-  }, [quizId]);
+  }, [quizId, getForm]);
 
   if (error) {
     return <div>Error: {error.message}</div>;
