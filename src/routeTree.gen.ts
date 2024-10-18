@@ -13,11 +13,11 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as FormsIndexImport } from './routes/forms/index'
 
 // Create Virtual Routes
 
 const IndexLazyImport = createFileRoute('/')()
-const FormsIndexLazyImport = createFileRoute('/forms/')()
 const AuthIndexLazyImport = createFileRoute('/auth/')()
 const FormsQuizIdLazyImport = createFileRoute('/forms/$quizId')()
 
@@ -28,15 +28,15 @@ const IndexLazyRoute = IndexLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
-const FormsIndexLazyRoute = FormsIndexLazyImport.update({
-  path: '/forms/',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/forms/index.lazy').then((d) => d.Route))
-
 const AuthIndexLazyRoute = AuthIndexLazyImport.update({
   path: '/auth/',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/auth/index.lazy').then((d) => d.Route))
+
+const FormsIndexRoute = FormsIndexImport.update({
+  path: '/forms/',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const FormsQuizIdLazyRoute = FormsQuizIdLazyImport.update({
   path: '/forms/$quizId',
@@ -61,18 +61,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FormsQuizIdLazyImport
       parentRoute: typeof rootRoute
     }
+    '/forms/': {
+      id: '/forms/'
+      path: '/forms'
+      fullPath: '/forms'
+      preLoaderRoute: typeof FormsIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/auth/': {
       id: '/auth/'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthIndexLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/forms/': {
-      id: '/forms/'
-      path: '/forms'
-      fullPath: '/forms'
-      preLoaderRoute: typeof FormsIndexLazyImport
       parentRoute: typeof rootRoute
     }
   }
@@ -83,46 +83,46 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/forms/$quizId': typeof FormsQuizIdLazyRoute
+  '/forms': typeof FormsIndexRoute
   '/auth': typeof AuthIndexLazyRoute
-  '/forms': typeof FormsIndexLazyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/forms/$quizId': typeof FormsQuizIdLazyRoute
+  '/forms': typeof FormsIndexRoute
   '/auth': typeof AuthIndexLazyRoute
-  '/forms': typeof FormsIndexLazyRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/forms/$quizId': typeof FormsQuizIdLazyRoute
+  '/forms/': typeof FormsIndexRoute
   '/auth/': typeof AuthIndexLazyRoute
-  '/forms/': typeof FormsIndexLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/forms/$quizId' | '/auth' | '/forms'
+  fullPaths: '/' | '/forms/$quizId' | '/forms' | '/auth'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/forms/$quizId' | '/auth' | '/forms'
-  id: '__root__' | '/' | '/forms/$quizId' | '/auth/' | '/forms/'
+  to: '/' | '/forms/$quizId' | '/forms' | '/auth'
+  id: '__root__' | '/' | '/forms/$quizId' | '/forms/' | '/auth/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   FormsQuizIdLazyRoute: typeof FormsQuizIdLazyRoute
+  FormsIndexRoute: typeof FormsIndexRoute
   AuthIndexLazyRoute: typeof AuthIndexLazyRoute
-  FormsIndexLazyRoute: typeof FormsIndexLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   FormsQuizIdLazyRoute: FormsQuizIdLazyRoute,
+  FormsIndexRoute: FormsIndexRoute,
   AuthIndexLazyRoute: AuthIndexLazyRoute,
-  FormsIndexLazyRoute: FormsIndexLazyRoute,
 }
 
 export const routeTree = rootRoute
@@ -139,8 +139,8 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/forms/$quizId",
-        "/auth/",
-        "/forms/"
+        "/forms/",
+        "/auth/"
       ]
     },
     "/": {
@@ -149,11 +149,11 @@ export const routeTree = rootRoute
     "/forms/$quizId": {
       "filePath": "forms/$quizId.lazy.tsx"
     },
+    "/forms/": {
+      "filePath": "forms/index.tsx"
+    },
     "/auth/": {
       "filePath": "auth/index.lazy.tsx"
-    },
-    "/forms/": {
-      "filePath": "forms/index.lazy.tsx"
     }
   }
 }
