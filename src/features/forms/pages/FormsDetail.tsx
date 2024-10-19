@@ -1,6 +1,8 @@
 import { FormsDetailRoute } from '@/routes/forms/$quizId.lazy';
 import { functions } from '@/utils';
-import { Stack, Title } from '@mantine/core';
+import { Button, Stack, Title } from '@mantine/core';
+import { useForm } from '@mantine/form';
+import { useDebouncedCallback } from '@mantine/hooks';
 import { useNavigate } from '@tanstack/react-router';
 import { ExecutionMethod } from 'appwrite';
 import { useCallback, useEffect, useState } from 'react';
@@ -46,6 +48,8 @@ export function FormsDetail() {
 
   const [quiz, setQuiz] = useState<FormsDetails | null>(null);
   const [error, setError] = useState<Error | null>(null);
+  const [givenAnswers, setGivenAnswers] = useState<{ [key: string]: number }>({});
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     try {
@@ -63,6 +67,50 @@ export function FormsDetail() {
     }
   }, [quizId, getForm]);
 
+  const sendAnswers = useDebouncedCallback(() => {
+    const quizAnswers = {
+      quizId: quizId,
+      answers: givenAnswers,
+    };
+
+    console.log('Sending answers', quizAnswers);
+  }, 3000);
+
+  useEffect(() => {
+    sendAnswers();
+  }, [givenAnswers, sendAnswers]);
+
+  const sendResponse = async values => {
+    setSubmitting(true);
+
+    const response = await functions.createExecution(
+      '67120ae600174dc868f6',
+      JSON.stringify({
+        quizId: quizId,
+        answers: givenAnswers,
+      }),
+      false,
+      '/forms/' + quizId + '/submit',
+      ExecutionMethod.POST,
+    );
+
+    if (response.status !== 'completed') {
+      throw new Error('Error sending answers');
+    }
+
+    console.log(response.responseBody);
+  };
+
+  const form = useForm({
+    mode: 'uncontrolled',
+    initialValues: {
+      email: '',
+      termsOfService: false,
+    },
+
+    validate: {},
+  });
+
   if (error) {
     return <div>Error: {error.message}</div>;
   }
@@ -77,9 +125,23 @@ export function FormsDetail() {
         Quiz: {quiz.title}
       </Title>
       <Stack>
-        {quiz.questions.map((q, i) => (
-          <Question key={i} index={i + 1} id={q.$id} question={q.question} answers={q.answers} />
-        ))}
+        <form onSubmit={sendResponse}>
+          {quiz.questions.map((q, i) => (
+            <Question
+              key={i}
+              index={i + 1}
+              id={q.$id}
+              question={q.question}
+              answers={q.answers}
+              givenAnswers={givenAnswers}
+              setGivenAnswers={setGivenAnswers}
+            />
+          ))}
+
+          <Button onClick={sendResponse} type="submit" loading={submitting}>
+            Submit
+          </Button>
+        </form>
       </Stack>
     </Stack>
   );
