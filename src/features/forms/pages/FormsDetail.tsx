@@ -80,7 +80,7 @@ export function FormsDetail() {
     sendAnswers(givenAnswers);
   }, [givenAnswers, sendAnswers]);
 
-  const sendResponse = async (values: { [key: string]: number | null }) => {
+  const sendResponse = async (values: { [key: string]: number | undefined }) => {
     setSubmitting(true);
     console.log('Submitting', values);
 
