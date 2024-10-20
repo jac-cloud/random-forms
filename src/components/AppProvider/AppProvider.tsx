@@ -25,7 +25,6 @@ const hashHistory = createHashHistory();
 // Create a new router instance
 const router = createRouter({
   routeTree,
-  basepath: import.meta.env.VITE_TANSTACK_BASE_PATH || '/',
   history: hashHistory,
 });
 
