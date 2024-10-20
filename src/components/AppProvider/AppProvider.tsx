@@ -13,15 +13,21 @@ import '@mantine/spotlight/styles.css';
 import '@mantine/tiptap/styles.css';
 
 import { createTheme, MantineProvider } from '@mantine/core';
-import { createRouter, RouterProvider } from '@tanstack/react-router';
+import { createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router';
 
 import '@/utils/appwrite';
 
 // Import the generated route tree
 import { routeTree } from '@/routeTree.gen';
 
+const hashHistory = createHashHistory();
+
 // Create a new router instance
-const router = createRouter({ routeTree, basepath: import.meta.env.VITE_TANSTACK_BASE_PATH || '/' });
+const router = createRouter({
+  routeTree,
+  basepath: import.meta.env.VITE_TANSTACK_BASE_PATH || '/',
+  history: hashHistory,
+});
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
