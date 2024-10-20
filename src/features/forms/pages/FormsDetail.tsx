@@ -8,7 +8,7 @@ import { ExecutionMethod } from 'appwrite';
 import { useCallback, useEffect, useState } from 'react';
 import { Question } from '../components';
 
-type Question = {
+type TQuestion = {
   question: string;
   answers: string[];
   $id: string;
@@ -17,7 +17,7 @@ type Question = {
 type FormsDetails = {
   title: string;
   owner: string;
-  questions: Question[];
+  questions: TQuestion[];
 };
 
 export function FormsDetail() {
@@ -31,7 +31,7 @@ export function FormsDetail() {
         '67120ae600174dc868f6',
         undefined,
         false,
-        '/forms/' + quizId,
+        `/forms/${quizId}`,
         ExecutionMethod.GET,
       );
 
@@ -67,7 +67,7 @@ export function FormsDetail() {
     }
   }, [quizId, getForm]);
 
-  const sendAnswers = useDebouncedCallback(() => {
+  const sendAnswers = useDebouncedCallback((givenAnswers: { [key: string]: number }) => {
     const quizAnswers = {
       quizId: quizId,
       answers: givenAnswers,
@@ -77,11 +77,16 @@ export function FormsDetail() {
   }, 3000);
 
   useEffect(() => {
-    sendAnswers();
+    sendAnswers(givenAnswers);
   }, [givenAnswers, sendAnswers]);
 
-  const sendResponse = async values => {
+  const sendResponse = async (values: { [key: string]: number | null }) => {
     setSubmitting(true);
+    console.log('Submitting', values);
+
+    if (!false) {
+      return;
+    }
 
     const response = await functions.createExecution(
       '67120ae600174dc868f6',
@@ -90,7 +95,7 @@ export function FormsDetail() {
         answers: givenAnswers,
       }),
       false,
-      '/forms/' + quizId + '/submit',
+      `/forms/${quizId}/submit`,
       ExecutionMethod.POST,
     );
 
@@ -103,12 +108,21 @@ export function FormsDetail() {
 
   const form = useForm({
     mode: 'uncontrolled',
-    initialValues: {
-      email: '',
-      termsOfService: false,
-    },
+    initialValues: quiz?.questions.reduce((acc: { [key: string]: number | undefined }, q) => {
+      acc[q.$id] = undefined;
+      return acc;
+    }, {}),
 
-    validate: {},
+    validate: quiz?.questions.reduce((acc: { [key: string]: (value: number | undefined) => string | undefined }, q) => {
+      acc[q.$id] = value => {
+        if (value === undefined) {
+          return 'Please select an answer';
+        }
+
+        return undefined;
+      };
+      return acc;
+    }, {}),
   });
 
   if (error) {
@@ -125,20 +139,21 @@ export function FormsDetail() {
         Quiz: {quiz.title}
       </Title>
       <Stack>
-        <form onSubmit={sendResponse}>
+        <form onSubmit={form.onSubmit(values => sendResponse(values))}>
           {quiz.questions.map((q, i) => (
             <Question
-              key={i}
+              key={q.$id}
               index={i + 1}
               id={q.$id}
               question={q.question}
               answers={q.answers}
               givenAnswers={givenAnswers}
               setGivenAnswers={setGivenAnswers}
+              {...form.getInputProps(q.$id)}
             />
           ))}
 
-          <Button onClick={sendResponse} type="submit" loading={submitting}>
+          <Button type="submit" loading={submitting}>
             Submit
           </Button>
         </form>

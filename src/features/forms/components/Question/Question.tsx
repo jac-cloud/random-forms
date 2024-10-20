@@ -1,6 +1,6 @@
-import { Radio, Stack, Title } from '@mantine/core';
+import { Radio, type RadioGroupProps, Stack, Title } from '@mantine/core';
 
-interface QuestionProps {
+interface QuestionProps extends Partial<RadioGroupProps> {
   index: number;
   id: string;
   question: string;
@@ -9,7 +9,7 @@ interface QuestionProps {
   setGivenAnswers: (answers: { [key: string]: number }) => void;
 }
 
-export function Question({ index, id, question, answers, givenAnswers, setGivenAnswers }: QuestionProps) {
+export function Question({ index, id, question, answers, givenAnswers, setGivenAnswers, ...others }: QuestionProps) {
   console.log(id);
 
   return (
@@ -17,8 +17,8 @@ export function Question({ index, id, question, answers, givenAnswers, setGivenA
       <Title order={2}>
         {index}. {question}
       </Title>
-      <Radio.Group>
-        <Stack>
+      <Radio.Group {...others}>
+        <Stack pb={8}>
           {answers.map(a => (
             <Radio
               value={a}
