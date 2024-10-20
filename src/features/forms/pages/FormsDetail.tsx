@@ -18,6 +18,7 @@ type FormsDetails = {
   title: string;
   owner: string;
   questions: TQuestion[];
+  answers: number[]; // index of array is the same as the question index,
 };
 
 export function FormsDetail() {
@@ -56,6 +57,17 @@ export function FormsDetail() {
       getForm(quizId)
         .then(qs => {
           setQuiz(qs as FormsDetails);
+
+          console.log(qs);
+
+          const answers = qs.questions.reduce((acc: { [key: string]: number }, q, i) => {
+            acc[q.$id] = qs.answers[i];
+            return acc;
+          }, {});
+
+          console.log(answers);
+
+          setGivenAnswers(answers);
         })
         .catch(error => {
           console.error(error);
@@ -69,11 +81,26 @@ export function FormsDetail() {
 
   const sendAnswers = useDebouncedCallback((givenAnswers: { [key: string]: number }) => {
     const quizAnswers = {
-      quizId: quizId,
       answers: givenAnswers,
     };
 
     console.log('Sending answers', quizAnswers);
+
+    functions
+      .createExecution(
+        '67120ae600174dc868f6',
+        JSON.stringify(quizAnswers),
+        false,
+        `/forms/${quizId}/save`,
+        ExecutionMethod.POST,
+      )
+      .then(response => {
+        if (response.status !== 'completed') {
+          throw new Error('Error sending answers');
+        }
+
+        console.log(response.responseBody);
+      });
   }, 3000);
 
   useEffect(() => {
@@ -91,7 +118,6 @@ export function FormsDetail() {
     const response = await functions.createExecution(
       '67120ae600174dc868f6',
       JSON.stringify({
-        quizId: quizId,
         answers: givenAnswers,
       }),
       false,
@@ -112,6 +138,16 @@ export function FormsDetail() {
       acc[q.$id] = undefined;
       return acc;
     }, {}),
+
+    onValuesChange: values => {
+      console.log('Values changed', values);
+      const updatedAnswers = Object.entries(values).reduce((acc: { [key: string]: number }, [key, value]) => {
+        acc[key] = value ?? -1;
+        return acc;
+      }, {});
+
+      setGivenAnswers(updatedAnswers);
+    },
 
     validate: quiz?.questions.reduce((acc: { [key: string]: (value: number | undefined) => string | undefined }, q) => {
       acc[q.$id] = value => {
@@ -144,11 +180,8 @@ export function FormsDetail() {
             <Question
               key={q.$id}
               index={i + 1}
-              id={q.$id}
               question={q.question}
               answers={q.answers}
-              givenAnswers={givenAnswers}
-              setGivenAnswers={setGivenAnswers}
               {...form.getInputProps(q.$id)}
             />
           ))}

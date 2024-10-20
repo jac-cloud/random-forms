@@ -2,16 +2,11 @@ import { Radio, type RadioGroupProps, Stack, Title } from '@mantine/core';
 
 interface QuestionProps extends Partial<RadioGroupProps> {
   index: number;
-  id: string;
   question: string;
   answers: string[];
-  givenAnswers: { [key: string]: number };
-  setGivenAnswers: (answers: { [key: string]: number }) => void;
 }
 
-export function Question({ index, id, question, answers, givenAnswers, setGivenAnswers, ...others }: QuestionProps) {
-  console.log(id);
-
+export function Question({ index, question, answers, ...others }: QuestionProps) {
   return (
     <Stack m={8}>
       <Title order={2}>
@@ -19,15 +14,9 @@ export function Question({ index, id, question, answers, givenAnswers, setGivenA
       </Title>
       <Radio.Group {...others}>
         <Stack pb={8}>
-          {answers.map(a => (
-            <Radio
-              value={a}
-              label={a}
-              key={a}
-              checked={givenAnswers[id] === answers.indexOf(a)}
-              onChange={() => setGivenAnswers({ ...givenAnswers, [id]: answers.indexOf(a) })}
-            />
-          ))}
+          {answers.map((a, i) => {
+            return <Radio value={i} label={a} key={a} />;
+          })}
         </Stack>
       </Radio.Group>
     </Stack>
