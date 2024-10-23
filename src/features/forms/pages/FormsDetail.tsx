@@ -36,6 +36,10 @@ export function FormsDetail() {
         ExecutionMethod.GET,
       );
 
+      if (response.responseStatusCode === 401) {
+        throw navigate({ to: '/forms', search: { error: 401 } });
+      }
+
       if (response.status !== 'completed') {
         throw navigate({ to: '/forms', search: { error: 404 } });
       }
@@ -142,7 +146,7 @@ export function FormsDetail() {
     onValuesChange: values => {
       console.log('Values changed', values);
       const updatedAnswers = Object.entries(values).reduce((acc: { [key: string]: number }, [key, value]) => {
-        acc[key] = value ?? -1;
+        acc[key] = value ? Number(value) : -1;
         return acc;
       }, {});
 

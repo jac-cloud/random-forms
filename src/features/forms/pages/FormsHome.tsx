@@ -45,6 +45,7 @@ export function FormsHome() {
           {error && (
             <Text fz={12} c="red.9">
               {error === 404 ? 'Non esiste nessun quiz con quel codice' : ''}
+              {error === 401 ? 'Non hai il permesso di visualizzare questo form' : ''}
             </Text>
           )}
         </Stack>
