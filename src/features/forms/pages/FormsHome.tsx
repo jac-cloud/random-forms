@@ -48,8 +48,9 @@ export function FormsHome() {
             </Group>
             {error && (
               <Text fz={12} c="red.9">
-                {error === 404 ? 'Non esiste nessun quiz con quel codice' : ''}
+                {error === 400 ? 'Hai già risposto al form' : ''}
                 {error === 401 ? 'Non hai il permesso di visualizzare questo form' : ''}
+                {error === 404 ? 'Non esiste nessun quiz con quel codice' : ''}
               </Text>
             )}
           </Stack>

@@ -36,8 +36,8 @@ export function FormsDetail() {
         ExecutionMethod.GET,
       );
 
-      if (response.responseStatusCode === 401) {
-        throw navigate({ to: '/forms', search: { error: 401 } });
+      if (response.responseStatusCode === 401 || response.responseStatusCode === 400) {
+        throw navigate({ to: '/forms', search: { error: response.responseStatusCode } });
       }
 
       if (response.status !== 'completed') {
