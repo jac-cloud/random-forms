@@ -23,8 +23,11 @@ type FormsDetails = {
 
 export function FormsDetail() {
   const navigate = useNavigate();
-
   const { quizId } = FormsDetailRoute.useParams();
+
+  const [quiz, setQuiz] = useState<FormsDetails | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const getForm = useCallback(
     async (quizId: string): Promise<FormsDetails> => {
@@ -50,10 +53,6 @@ export function FormsDetail() {
     },
     [navigate],
   );
-
-  const [quiz, setQuiz] = useState<FormsDetails | null>(null);
-  const [error, setError] = useState<Error | null>(null);
-  const [submitting, setSubmitting] = useState(false);
 
   const saveAnswers = useDebouncedCallback((givenAnswers: { [key: string]: string | undefined }) => {
     const answersWithIndex = getAnswersWithIndex(quiz?.questions, givenAnswers);
@@ -116,6 +115,10 @@ export function FormsDetail() {
   };
 
   function getAnswersWithIndex(questions: TQuestion[] | undefined, answers: { [key: string]: string | undefined }) {
+    if (!questions) {
+      throw new Error('Questions are not loaded');
+    }
+
     return Object.entries(answers).reduce((acc: { [key: string]: number }, [key, value]) => {
       acc[key] = value ? (questions?.find(q => q.$id === key)?.answers.indexOf(value) ?? -1) : -1;
       return acc;
@@ -123,6 +126,10 @@ export function FormsDetail() {
   }
 
   function getAnswersWithString(questions: TQuestion[] | undefined, answers: { [key: string]: number }) {
+    if (!questions) {
+      throw new Error('Questions are not loaded');
+    }
+
     return Object.entries(answers).reduce((acc: { [key: string]: string | undefined }, [key, value]) => {
       acc[key] = value !== -1 ? questions?.find(q => q.$id === key)?.answers[value] : undefined;
       return acc;
@@ -165,8 +172,8 @@ export function FormsDetail() {
 
           console.log(answers);
 
-          console.log('form init: ', getAnswersWithString(quiz?.questions, answers));
-          form.setValues(getAnswersWithString(quiz?.questions, answers));
+          console.log('form init: ', getAnswersWithString(qs.questions, answers));
+          form.setValues(getAnswersWithString(qs.questions, answers));
         })
         .catch(error => {
           console.error(error);
@@ -176,7 +183,8 @@ export function FormsDetail() {
       console.error(error);
       setError(error as Error);
     }
-  }, [quizId, getForm, quiz?.questions, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quizId, getForm]);
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -202,8 +210,6 @@ export function FormsDetail() {
               {...form.getInputProps(q.$id)}
             />
           ))}
-
-          <Button onClick={() => form.initialize({ '671503b5001dd62295f6': `123` })}>Random email</Button>
 
           <Button type="submit" loading={submitting}>
             Submit
