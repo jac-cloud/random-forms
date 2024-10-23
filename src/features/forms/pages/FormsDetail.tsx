@@ -111,9 +111,22 @@ export function FormsDetail() {
     sendAnswers(givenAnswers);
   }, [givenAnswers, sendAnswers]);
 
-  const sendResponse = async (values: { [key: string]: number | undefined }) => {
+  const sendResponse = async (values: { [key: string]: string }) => {
     setSubmitting(true);
-    console.log('Submitting', values);
+    console.log('raw', Object.entries(values));
+    // 0: (2) ['671503b5001dd62295f6', '112']
+    // 1: (2) ['6715039e0032815a0ad7', 'si va allettto?!']
+    // 2: (2) ['671503fc001505531c92', '25% parte 2']
+    // 3: (2) ['6715039d0008e94840cb', 'Bob']
+    // 4: (2) ['671503e20016ce641d1b', 'Golang']
+
+    const givenAnswers = Object.entries(values).reduce((acc: { [key: string]: number }, [key, value]) => {
+      acc[key] = value ? (quiz?.questions.find(q => q.$id === key)?.answers.indexOf(value) ?? -1) : -1;
+      return acc;
+    }, {});
+
+    console.log('Submitting', givenAnswers);
+    setSubmitting(false);
 
     if (!false) {
       return;
@@ -138,24 +151,24 @@ export function FormsDetail() {
 
   const form = useForm({
     mode: 'uncontrolled',
-    initialValues: quiz?.questions.reduce((acc: { [key: string]: number | undefined }, q) => {
-      acc[q.$id] = undefined;
+    initialValues: Object.entries(givenAnswers).reduce((acc: { [key: string]: string | undefined }, [key, value]) => {
+      acc[key] = value === -1 || value === undefined ? undefined : String(value);
       return acc;
     }, {}),
 
     onValuesChange: values => {
       console.log('Values changed', values);
       const updatedAnswers = Object.entries(values).reduce((acc: { [key: string]: number }, [key, value]) => {
-        acc[key] = value ? Number(value) : -1;
+        acc[key] = value ? (quiz?.questions.find(q => q.$id === key)?.answers.indexOf(value) ?? -1) : -1;
         return acc;
       }, {});
 
       setGivenAnswers(updatedAnswers);
     },
 
-    validate: quiz?.questions.reduce((acc: { [key: string]: (value: number | undefined) => string | undefined }, q) => {
+    validate: quiz?.questions.reduce((acc: { [key: string]: (value: string | undefined) => string | undefined }, q) => {
       acc[q.$id] = value => {
-        if (value === undefined) {
+        if (value === undefined || value === '-1') {
           return 'Please select an answer';
         }
 
@@ -180,15 +193,18 @@ export function FormsDetail() {
       </Title>
       <Stack>
         <form onSubmit={form.onSubmit(values => sendResponse(values))}>
-          {quiz.questions.map((q, i) => (
-            <Question
-              key={q.$id}
-              index={i + 1}
-              question={q.question}
-              answers={q.answers}
-              {...form.getInputProps(q.$id)}
-            />
-          ))}
+          {quiz.questions.map((q, i) => {
+            console.log(JSON.stringify(form.getInputProps(q.$id)));
+            return (
+              <Question
+                key={form.key(q.$id)}
+                index={i + 1}
+                question={q.question}
+                answers={q.answers}
+                {...form.getInputProps(q.$id)}
+              />
+            );
+          })}
 
           <Button type="submit" loading={submitting}>
             Submit

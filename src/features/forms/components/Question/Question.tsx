@@ -14,8 +14,8 @@ export function Question({ index, question, answers, ...others }: QuestionProps)
       </Title>
       <Radio.Group {...others}>
         <Stack pb={8}>
-          {answers.map((a, i) => {
-            return <Radio value={i} label={a} key={a} />;
+          {answers.map(a => {
+            return <Radio value={a} label={a} key={a} />;
           })}
         </Stack>
       </Radio.Group>
