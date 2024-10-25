@@ -1,5 +1,5 @@
 import { FormsDetailRoute } from '@/routes/forms/$quizId.lazy';
-import { functions } from '@/utils';
+import { account, functions } from '@/utils';
 import { Button, Stack, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useDebouncedCallback } from '@mantine/hooks';
@@ -14,7 +14,7 @@ type TQuestion = {
   $id: string;
 };
 
-type FormsDetails = {
+export type FormsDetails = {
   title: string;
   owner: string;
   questions: TQuestion[];
@@ -23,9 +23,11 @@ type FormsDetails = {
 
 export function FormsDetail() {
   const navigate = useNavigate();
+  const [editing, setEditing] = useState(false);
   const { quizId } = FormsDetailRoute.useParams();
-
+  const [myMail, setMyMail] = useState('');
   const [quiz, setQuiz] = useState<FormsDetails | null>(null);
+  const [savedQuizBeforeEdit, setSavedQuizBeforeEdit] = useState<FormsDetails | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -157,22 +159,37 @@ export function FormsDetail() {
     }, {}),
   });
 
+  function toggleEditing() {
+    if (!editing) {
+      console.log('Saving quiz', quiz);
+      //TODO: Doesn't work
+      setSavedQuizBeforeEdit(quiz);
+    } else {
+      console.log('Restoring quiz', savedQuizBeforeEdit);
+      setQuiz(savedQuizBeforeEdit);
+    }
+
+    setEditing(!editing);
+  }
+
+  function saveEdits() {
+    console.log('Saving edits');
+    //TODO: SAVE EDITS
+  }
+
   useEffect(() => {
     try {
+      account.get().then(e => setMyMail(e.email));
+
       getForm(quizId)
         .then(qs => {
           setQuiz(qs as FormsDetails);
-
-          console.log(qs);
 
           const answers = qs.questions.reduce((acc: { [key: string]: number }, q, i) => {
             acc[q.$id] = qs.answers[i];
             return acc;
           }, {});
 
-          console.log(answers);
-
-          console.log('form init: ', getAnswersWithString(qs.questions, answers));
           form.setValues(getAnswersWithString(qs.questions, answers));
         })
         .catch(error => {
@@ -195,7 +212,7 @@ export function FormsDetail() {
   }
 
   return (
-    <Stack>
+    <Stack p="1rem">
       <Title order={1} mb={16}>
         Quiz: {quiz.title}
       </Title>
@@ -204,12 +221,27 @@ export function FormsDetail() {
           {quiz.questions.map((q, i) => (
             <Question
               key={form.key(q.$id)}
-              index={i + 1}
-              question={q.question}
-              answers={q.answers}
+              index={i}
+              editing={editing}
+              quiz={quiz}
+              quizSetter={setQuiz}
               {...form.getInputProps(q.$id)}
             />
           ))}
+
+          {quiz.owner === myMail ? (
+            <Button mr={2} onClick={toggleEditing}>
+              {editing ? 'Cancel' : 'Edit'}
+            </Button>
+          ) : null}
+          {editing ? (
+            <Button mr={2} onClick={saveEdits}>
+              Save
+            </Button>
+          ) : null}
+          <Button mr={2} onClick={() => navigate({ to: '/forms', search: { error: undefined } })}>
+            Back
+          </Button>
 
           <Button type="submit" loading={submitting}>
             Submit
