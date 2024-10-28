@@ -28,7 +28,30 @@ export function Question({ index, quiz, editing, quizSetter, ...others }: Questi
   return (
     <Stack m={8}>
       <Title order={2}>
-        {index + 1}. {question}
+        <Group>
+          {index + 1}.{' '}
+          {editing ? (
+            <>
+              <TextInput
+                defaultValue={question}
+                onBlur={e => {
+                  const newQuiz = { ...quiz };
+                  newQuiz.questions[index].question = e.target.value;
+                  quizSetter(newQuiz);
+                }}
+              />
+              <CloseButton
+                onClick={() => {
+                  const newQuiz = { ...quiz };
+                  newQuiz.questions.splice(index, 1);
+                  quizSetter(newQuiz);
+                }}
+              />
+            </>
+          ) : (
+            question
+          )}
+        </Group>
       </Title>
       <Radio.Group {...others}>
         <Stack pb={8}>
