@@ -224,6 +224,66 @@ export function FormsDetail() {
     setQuiz(data);
   }
 
+  function downloadQuestionsCsv() {
+    if (!quiz) {
+      throw new Error('Quiz is not loaded');
+    }
+
+    const csvContent = `data:text/csv;charset=utf-8,${[
+      ['Question', 'Answers'],
+      ...quiz.questions.map(q => [q.question, q.answers.join(';')]),
+    ]
+      .map(e => e.join(','))
+      .join('\n')}`;
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `${quiz.title}.csv`);
+    document.body.appendChild(link);
+    link.click();
+  }
+
+  function uploadQuestionsCsv() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv';
+    input.onchange = e => {
+      const target = e.target as HTMLInputElement;
+      if (target.files) {
+        loadQuestionsCsv(target.files[0]);
+      }
+    };
+
+    input.click();
+  }
+
+  function loadQuestionsCsv(file: File | null) {
+    if (!file) {
+      return;
+    }
+
+    if (!quiz) {
+      throw new Error('Quiz is not loaded');
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== 'string') {
+        throw new Error('File is not a string');
+      }
+
+      const lines = reader.result.split('\n');
+      const questions = lines.slice(1).map(line => {
+        const [question, answers] = line.split(',');
+        return { question, answers: answers.split(';'), $id: Math.random().toString(36).substring(7) };
+      });
+
+      setQuiz({ ...quiz, questions });
+    };
+    reader.readAsText(file);
+  }
+
   useEffect(() => {
     try {
       account.get().then(e => setMyMail(e.email));
@@ -319,6 +379,16 @@ export function FormsDetail() {
             <Button mr={2} onClick={saveEdits}>
               Save
             </Button>
+          ) : null}
+          {editing ? (
+            <>
+              <Button mr={2} onClick={downloadQuestionsCsv}>
+                Download Questions CSV
+              </Button>
+              <Button mr={2} onClick={uploadQuestionsCsv}>
+                Upload Questions CSV
+              </Button>
+            </>
           ) : null}
           <Button mr={2} onClick={() => navigate({ to: '/forms', search: { error: undefined } })}>
             Back
