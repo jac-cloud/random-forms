@@ -275,11 +275,19 @@ export function FormsDetail() {
 
       const lines = reader.result.split('\n');
       const questions = lines.slice(1).map(line => {
+        // Check if line is empty
+        if (line.trim() === '') {
+          return null;
+        }
+
         const [question, answers] = line.split(',');
         return { question, answers: answers.split(';'), $id: Math.random().toString(36).substring(7) };
       });
 
-      setQuiz({ ...quiz, questions });
+      // Remove empty lines
+      const filtered = questions.filter(q => q !== null) as TQuestion[];
+
+      setQuiz({ ...quiz, questions: filtered });
     };
     reader.readAsText(file);
   }
@@ -394,9 +402,15 @@ export function FormsDetail() {
             Back
           </Button>
 
-          <Button type="submit" loading={submitting}>
-            Submit
-          </Button>
+          {quiz.owner === myMail ? (
+            <Button mr={2} onClick={() => navigate({ to: `/forms/${quizId}/results` })}>
+              View Results
+            </Button>
+          ) : (
+            <Button type="submit" loading={submitting}>
+              Submit
+            </Button>
+          )}
         </form>
       </Stack>
     </Stack>
