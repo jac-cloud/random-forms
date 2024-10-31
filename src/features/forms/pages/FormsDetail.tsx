@@ -13,6 +13,7 @@ type TQuestion = {
   question: string;
   answers: string[];
   $id: string;
+  correct_answer?: number; //Only if creator of form
 };
 
 export type FormsDetails = {
@@ -63,6 +64,14 @@ export function FormsDetail() {
   );
 
   const saveAnswers = useDebouncedCallback((givenAnswers: { [key: string]: string | undefined }) => {
+    if (!quiz) {
+      throw new Error('Quiz is not loaded');
+    }
+
+    if (editing) {
+      return;
+    }
+
     const answersWithIndex = getAnswersWithIndex(quiz?.questions, givenAnswers);
     const filtered = Object.entries(answersWithIndex).reduce(
       (acc, [key, value]) => {
@@ -98,6 +107,14 @@ export function FormsDetail() {
   }, 3000);
 
   const sendResponse = async (values: { [key: string]: string | undefined }) => {
+    if (!quiz) {
+      throw new Error('Quiz is not loaded');
+    }
+
+    if (editing) {
+      return;
+    }
+
     setSubmitting(true);
 
     const givenAnswers = getAnswersWithIndex(quiz?.questions, values);
@@ -179,6 +196,15 @@ export function FormsDetail() {
 
       console.log('Saving quiz', saved);
       setSavedQuizBeforeEdit(saved);
+
+      const answers = quiz.questions.reduce((acc: { [key: string]: number }, q, i) => {
+        acc[q.$id] = q.correct_answer ?? 0;
+        return acc;
+      }, {});
+
+      form.setValues(getAnswersWithString(quiz.questions, answers));
+
+      console.log('Answers', answers);
     } else {
       console.log('Restoring quiz', savedQuizBeforeEdit);
       setQuiz({
@@ -230,8 +256,8 @@ export function FormsDetail() {
     }
 
     const csvContent = `data:text/csv;charset=utf-8,${[
-      ['Question', 'Answers'],
-      ...quiz.questions.map(q => [q.question, q.answers.join(';')]),
+      ['Question', 'Correct Answer', 'Answers'],
+      ...quiz.questions.map(q => [q.question, q.correct_answer ?? 0, q.answers.join(';')]),
     ]
       .map(e => e.join(','))
       .join('\n')}`;
@@ -276,7 +302,7 @@ export function FormsDetail() {
       const lines = reader.result.split('\n');
       const questions = lines.slice(1).map(line => {
         // Check if line is empty
-        if (line.trim() === '') {
+        if (line.trim().length < 4) {
           return null;
         }
 
